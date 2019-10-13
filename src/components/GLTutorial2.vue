@@ -22,24 +22,27 @@ export default {
     init: function() {
       var container = document.getElementById("container");
       let that = this;
+      
+      this.scene = new THREE.Scene();
 
       this.renderer = new THREE.WebGLRenderer({ antialias: true });
       this.renderer.setSize(container.clientWidth, container.clientHeight);
+
       container.appendChild(this.renderer.domElement);
 
       const fov = 45;
-      const aspect = 2; // the canvas default
-      const near = 0.1;
-      const far = 100;
+      const aspect = container.clientWidth / container.clientHeight; // the canvas default
+      const near = 1;
+      const far = 1000;
       this.camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-      this.camera.position.set(0, 10, 20);
+      this.camera.position.set(0, 10, 40);
+
 
       const controls = new OrbitControls(this.camera, this.renderer.domElement);
-      controls.target.set(0, 5, 0);
+      controls.target.set(0, 0, 0);
       controls.update();
 
 
-      this.scene = new THREE.Scene();
       this.scene.background = new THREE.Color("black");
       
       var ground = require('@/assets/models/checker.png');
@@ -63,7 +66,7 @@ export default {
         });
 
         const mesh = new THREE.Mesh(planeGeo, planeMat);
-        mesh.rotation.x = Math.PI * -0.5;
+        mesh.rotation.x = -90 * Math.PI / 180 ; // 弧度
         that.scene.add(mesh);
       }
       
