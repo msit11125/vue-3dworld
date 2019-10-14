@@ -37,7 +37,7 @@ export default {
       this.scene = new THREE.Scene();
       this.camera = new THREE.PerspectiveCamera(
         45,
-        this.container.clientWidth / this.container.clientHeight,
+        window.innerWidth/ window.innerHeight,
         1,
         5000
       );
@@ -48,9 +48,8 @@ export default {
 
       this.renderer = new THREE.WebGLRenderer();
       this.renderer.setClearColor(0xdddddd);
-      this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
+      this.renderer.setSize(window.innerWidth, window.innerHeight);
       this.renderer.shadowMap.enabled = true;
-      this.renderer.shadowMapSoft = true;
       this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
       const controls = new OrbitControls(this.camera, this.renderer.domElement);
@@ -124,10 +123,10 @@ export default {
 
     resize(){
        
-        this.camera.aspect = this.container.clientWidth / this.container.clientHeight;
+        this.camera.aspect = window.innerWidth / window.innerHeight;
         this.camera.updateProjectionMatrix();
 
-        this.renderer.setSize( this.container.clientWidth, this.container.clientHeight );
+        this.renderer.setSize( window.innerWidth, window.innerHeight );
     }
   },
 
@@ -143,11 +142,5 @@ export default {
 </script>
 
 <style  rel="stylesheet/scss" lang="scss" scoped>
-#container {
-  width: 100%;
-  height: 80vh;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-}
+
 </style>

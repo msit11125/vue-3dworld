@@ -8,6 +8,7 @@
 <script>
 import * as THREE from "three";
 import Stats from "stats-js"; // FPS工具
+import { LightShadow } from 'three';
 
 export default {
   name: "gl-tutorial1",
@@ -54,15 +55,16 @@ export default {
       light.position.set(2, 5, 3);
       light.target = this.cube;
       light.castShadow = true;
-
+      light.shadow.bias = 0.0001;
       this.scene.add(light);
 
       // ambient light
       var ambient = new THREE.AmbientLight(0x666666);
       this.scene.add(ambient);
-
+      
       this.renderer = new THREE.WebGLRenderer({ antialias: true });
-      this.renderer.setSize(800, 600);
+    
+      this.renderer.setSize(window.innerWidth, window.innerHeight);
       this.renderer.shadowMap.enabled = true;
       this.renderer.shadowMapSoft = true;
       this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -116,11 +118,5 @@ export default {
 </script>
 
 <style  rel="stylesheet/scss" lang="scss" scoped>
-#container {
-  width: 100%;
-  height: 80vh;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-}
+
 </style>

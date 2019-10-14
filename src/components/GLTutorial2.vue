@@ -6,8 +6,12 @@
 
 <script>
 const THREE = require("three");
-const OrbitControls = require("three-orbitcontrols");
-const OBJLoader = require("three-obj-loader");
+
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+// const OrbitControls = require("three-orbitcontrols");
+
+import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
+// const OBJLoader = require("three-obj-loader");
 
 export default {
   name: "gl-tutorial2",
@@ -26,12 +30,12 @@ export default {
       this.scene = new THREE.Scene();
 
       this.renderer = new THREE.WebGLRenderer({ antialias: true });
-      this.renderer.setSize(container.clientWidth, container.clientHeight);
+      this.renderer.setSize(window.innerWidth, window.innerHeight);
 
       container.appendChild(this.renderer.domElement);
 
       const fov = 45;
-      const aspect = container.clientWidth / container.clientHeight; // the canvas default
+      const aspect = window.innerWidth/ window.innerHeight; // the canvas default
       const near = 1;
       const far = 1000;
       this.camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
@@ -95,9 +99,9 @@ export default {
      
       var threeDObj = require('@/assets/models/windmill.obj');
       // instantiate a loader
-      OBJLoader(THREE);
-      var loader = new THREE.OBJLoader();
-
+      // OBJLoader(THREE);
+      // var loader = new THREE.OBJLoader();
+      var loader = new OBJLoader();
       {
         // load a resource
         loader.load(
@@ -132,11 +136,5 @@ export default {
 </script>
 
 <style  rel="stylesheet/scss" lang="scss" scoped>
-#container {
-  width: 100%;
-  height: 80vh;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-}
+
 </style>

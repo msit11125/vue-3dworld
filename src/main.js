@@ -22,8 +22,10 @@ library.add(fas);
 Vue.component('font-awesome-icon', FontAwesomeIcon);
 
 import Default from './layouts/Default.vue';
+import NoLayout from './layouts/NoLayout.vue';
 
 Vue.component('default-layout', Default);
+Vue.component('no-layout', NoLayout);
 
 Vue.config.productionTip = false;
 
