@@ -5,7 +5,7 @@
         <router-link :class="['list-group-item list-group-item-action',{'active': $route.fullPath === '/'}]" 
          :to="{ name: 'home' }">測試</router-link>
 
-        <router-link class="list-group-item list-group-item-action" active-class="active" :to="{ name: 'demo' }">教學</router-link>
+        <router-link class="list-group-item list-group-item-action" active-class="active" :to="{ name: 'demo' }">練習</router-link>
 
         <router-link class="list-group-item list-group-item-action" active-class="active" :to="{ name: 'others' }">其他</router-link>
 

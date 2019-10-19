@@ -8,7 +8,6 @@
 <script>
 import * as THREE from "three";
 import Stats from "stats-js"; // FPS工具
-import { LightShadow } from 'three';
 
 export default {
   name: "gl-tutorial1",
