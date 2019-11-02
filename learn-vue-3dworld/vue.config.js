@@ -1,6 +1,7 @@
 module.exports = {
-  publicPath: process.env.NODE_ENV === 'production'
-    ? '/'
+    // 同時要改router/index.js base
+    publicPath: process.env.NODE_ENV === 'production'
+    ? '/dist/'
     : '/',
 
   outputDir: 'dist',

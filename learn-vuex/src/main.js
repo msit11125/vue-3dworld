@@ -6,7 +6,7 @@ import store from './store';
 import axios from 'axios';
 import VueAxios from 'vue-axios';
 
-import 'bootstrap/dist/css/bootstrap.css'; // 載入 bootstrap CSS 檔
+import './assets/styles/main.scss'; // 載入 bootstrap CSS 檔
 import 'bootstrap';      // 載入 bootstrap 的 JS 檔
 import 'jquery';        // 載入 jQuery
 

@@ -20,7 +20,7 @@ export default {
 };
 </script>
 
-<style lang="sass">
+<style lang="scss">
 @import './assets/styles/main.scss';
 
 </style>

@@ -50,6 +50,8 @@ for(var i=1; i<=9; i++){
 }
 
 const router = new VueRouter({
+    base: process.env.NODE_ENV === 'production' ?
+    '/dist/' : '/',
     mode: 'history',
     routes: myRoutes
 });

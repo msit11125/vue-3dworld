@@ -33,19 +33,18 @@ export default {
 
     var raycaster = new THREE.Raycaster();
     var mouse = new THREE.Vector2();
-
+    var INTERSECTED;
+    
+    
     var geometry = new THREE.BoxGeometry(1, 1, 1);
-    var material = new THREE.MeshLambertMaterial({ color: 0xf7f7f7 });
-    //var mesh = new THREE.Mesh(geometry, material);
-
-    //scene.add(mesh);
 
     var meshX = -10;
     for (var i = 0; i < 15; i++) {
+      var material = new THREE.MeshLambertMaterial({ color: 0xf7f7f7 });
       var mesh = new THREE.Mesh(geometry, material);
       mesh.position.x = (Math.random() - 0.5) * 10;
       mesh.position.y = (Math.random() - 0.5) * 10;
-      mesh.position.z = (Math.random() - 0.5) * 10;
+      mesh.position.z = (Math.random() - 0.5) * 50;
       scene.add(mesh);
       meshX += 1;
     }
@@ -61,6 +60,22 @@ export default {
     var render = function() {
       requestAnimationFrame(render);
 
+      // raycaster 焦點
+      var intersects = raycaster.intersectObjects(scene.children, true);
+
+      if ( intersects.length > 0 ) {
+					if ( INTERSECTED != intersects[ 0 ].object ) {
+						if ( INTERSECTED ) INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+						INTERSECTED = intersects[ 0 ].object;
+						INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
+						INTERSECTED.material.color.setHex( 0xff0000 );
+					}
+				} else {
+					if ( INTERSECTED ) INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+					INTERSECTED = null;
+				}
+
+
       renderer.render(scene, camera);
     };
 
@@ -71,12 +86,6 @@ export default {
       mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
       raycaster.setFromCamera(mouse, camera);
-
-      var intersects = raycaster.intersectObjects(scene.children, true);
-      for (var i = 0; i < intersects.length; i++) {
-        var obj = intersects[i].object;
-        console.log(obj);
-      }
     }
 
     window.addEventListener("mousemove", onMouseMove);

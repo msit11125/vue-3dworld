@@ -1,5 +1,16 @@
+// https://bootstrap.hexschool.com/docs/4.2/getting-started/theming/
+// 自訂主題化
+@import "node_modules/bootstrap/scss/functions";
+@import './_variables.scss';
+@import "node_modules/bootstrap/scss/bootstrap";
+
 
 $color-green: #378b68;
+$assets-img: '~@/assets/images/';
+
+body{
+  background-image: url( $assets-img +'main_background.png') ;
+}
 
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;

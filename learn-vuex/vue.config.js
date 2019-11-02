@@ -1,7 +1,7 @@
 module.exports = {
-  publicPath: process.env.NODE_ENV === 'production'
-    ? '/'
-    : '/',
+  // 同時要改router/index.js base
+  publicPath: process.env.NODE_ENV === 'production' ?
+    '/dist/' : '/',
 
   outputDir: 'dist',
 
@@ -25,8 +25,7 @@ module.exports = {
   // corsUseCredentials: false,
   // webpack 配置，键值对象时会合并配置，为方法时会改写配置
   // https://cli.vuejs.org/guide/webpack.html#simple-configuration
-  configureWebpack: (config) => {
-  },
+  configureWebpack: (config) => {},
 
   // webpack 链接 API，用于生成和修改 webapck 配置
   // https://github.com/mozilla-neutrino/webpack-chain
@@ -35,18 +34,20 @@ module.exports = {
     // src 會變成base64 byte
     const imagesRule = config.module.rule('images')
     imagesRule.uses.clear()
-    imagesRule.use('file-loader')
+    imagesRule
+      .test(/\.(png|jpe?g|gif|svg)(\?.*)?$/)
+      .use('file-loader')
       .loader('url-loader')
       .options({
         limit: 10000,
         fallback: {
           loader: 'file-loader',
           options: {
-            name: 'img/[name].[hash:8].[ext]'
+            name: 'images/[name].[ext]' // .[hash:8]
           }
         }
       });
-    
+
     // .obj
     config.module.rule('obj')
       .test(/\.(obj)$/)
@@ -69,7 +70,7 @@ module.exports = {
     // css预设器配置项
     loaderOptions: {
       css: {
-        // options here will be passed to css-loader
+        // options here will be passed to css-loader       
       },
 
       postcss: {
@@ -81,20 +82,20 @@ module.exports = {
   // All options for webpack-dev-server are supported
   // https://webpack.js.org/configuration/dev-server/
   devServer: {
+
     open: true,
 
     host: '127.0.0.1',
 
     port: 3000,
 
-    https: false,
+    https: true,
 
     hotOnly: false,
 
     proxy: null,
 
-    before: app => {
-    }
+    before: app => {}
   },
   // 构建时开启多进程处理 babel 编译
   parallel: require('os').cpus().length > 1,
