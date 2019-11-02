@@ -17,6 +17,11 @@
         class="list-group-item list-group-item-action"
         active-class="active"
         :to="{ name: 'others' }" >其他</router-link>
+
+      <router-link
+        class="list-group-item list-group-item-action"
+        active-class="active"
+        :to="{ name: 'project' }" >專案</router-link>
     </div>
   </div>
 </template>

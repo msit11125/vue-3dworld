@@ -22,7 +22,12 @@ var myRoutes = [
         meta: { layout: "default"},
         component: ()=> import("@/pages/Others.vue")
     },
-    
+    {
+        path: '/project',
+        name: 'project',
+        meta: { layout: "no"},
+        component: ()=> import("@/pages/Project.vue")
+    },
 ];
 
 function loadView(view) {
