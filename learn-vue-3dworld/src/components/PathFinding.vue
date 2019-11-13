@@ -72,8 +72,6 @@ export default {
 
     $("#btn").click(function(e) {
       var PF = require("pathfinding");
-      var grid = new PF.Grid(5, 3);
-
       var grid = new PF.Grid(matrix);
 
       var finder = new PF.AStarFinder();

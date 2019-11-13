@@ -1,11 +1,29 @@
 <template>
-  <div id="container"></div>
+  <div id="container">
+    <button id="findBtn" class="btn btn-primary btn-lg">開始</button>
+  </div>
 </template>
 
+<style>
+.btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 20%;
+  border-radius: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+</style>
 
 <script>
 import * as THREE from "three";
+import * as PF from "pathfinding";
+
 export default {
+  methods: {},
   mounted() {
     var container = document.getElementById("container");
     var camera, scene, renderer;
@@ -16,7 +34,7 @@ export default {
     var rollOverMesh, rollOverMaterial;
     var cubeGeo, cubeMaterial;
     var objects = [];
-
+    var path = [];
     init();
     render();
 
@@ -68,16 +86,46 @@ export default {
       renderer.setSize(window.innerWidth, window.innerHeight);
 
       // start
-      var startPoint = new THREE.Mesh(cubeGeo, new THREE.MeshLambertMaterial({ color: 0x0ff74c }));
+      var startPoint = new THREE.Mesh(
+        cubeGeo,
+        new THREE.MeshLambertMaterial({ color: 0x0ff74c })
+      );
       startPoint.position.copy({ x: -475, y: 25, z: -475 });
       scene.add(startPoint);
       objects.push(startPoint);
 
       // end
-      var startPoint = new THREE.Mesh(cubeGeo, new THREE.MeshLambertMaterial({ color: 0x00f7fc }));
-      startPoint.position.copy({ x: 475, y: 25, z: 475 });
-      scene.add(startPoint);
-      objects.push(startPoint);
+      var endPoint = new THREE.Mesh(
+        cubeGeo,
+        new THREE.MeshLambertMaterial({ color: 0x00f7fc })
+      );
+      endPoint.position.copy({ x: 475, y: 25, z: 475 });
+      scene.add(endPoint);
+      objects.push(endPoint);
+
+      // pathFInding
+      
+
+      $("#findBtn").click(function() {
+        var grid = new PF.Grid(buildMatrix());
+
+        var finder = new PF.AStarFinder();
+        
+        path = finder.findPath(0, 0, 19, 19, grid);
+        path.forEach(element => {
+          var point = new THREE.Mesh(
+            cubeGeo,
+            new THREE.MeshLambertMaterial({ color: 0xE5E5D8, opacity:0.7, transparent: true })
+          );
+          point.position.copy({
+            x: element[0] * 50 - 475,
+            y: 25,
+            z: element[1] * 50 - 475
+          });
+          scene.add(point);
+        });
+        render();
+      });
 
       container.appendChild(renderer.domElement);
       document.addEventListener("mousemove", onDocumentMouseMove, false);
@@ -111,6 +159,7 @@ export default {
       }
       render();
     }
+
     function onDocumentMouseDown(event) {
       event.preventDefault();
       mouse.set(
@@ -163,6 +212,25 @@ export default {
     }
     function render() {
       renderer.render(scene, camera);
+    }
+
+    function buildMatrix() {
+      var size = 20;
+      var matrix = [];
+      for (var r = 1; r <= 20; r++) {
+        var insideArr = [];
+        for (var c = 1; c <= 20; c++) {
+          insideArr.push(0);
+        }
+        matrix.push(insideArr);
+      }
+      return matrix;
+    }
+
+    function xzToPoint(x, z) {
+      var col = (x + 475) / 50;
+      var row = (z + 475) / 50;
+      return { col: col, row: row };
     }
   }
 };
