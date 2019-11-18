@@ -8,6 +8,9 @@ var rollOverMesh, rollOverMaterial;
 var cubeGeo, cubeMaterial;
 var objects = [];
 var path = [];
+var cubes = [];
+var theMatrix = buildMatrix();
+
 init();
 render();
 
@@ -22,6 +25,7 @@ function init() {
     camera.lookAt(0, 0, 0);
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0xf0f0f0);
+    
     // roll-over helpers
     var rollOverGeo = new THREE.BoxBufferGeometry(50, 50, 50);
     rollOverMaterial = new THREE.MeshBasicMaterial({
@@ -31,15 +35,18 @@ function init() {
     });
     rollOverMesh = new THREE.Mesh(rollOverGeo, rollOverMaterial);
     scene.add(rollOverMesh);
+
     // cubes
     cubeGeo = new THREE.BoxBufferGeometry(50, 50, 50);
     cubeMaterial = new THREE.MeshLambertMaterial({
         color: 0xfeb74c
     });
+
     // grid
     var gridHelper = new THREE.GridHelper(1000, 20);
     scene.add(gridHelper);
-    //
+
+    // raycaster
     raycaster = new THREE.Raycaster();
     mouse = new THREE.Vector2();
     var geometry = new THREE.PlaneBufferGeometry(1000, 1000);
@@ -52,6 +59,7 @@ function init() {
     );
     scene.add(plane);
     objects.push(plane);
+
     // lights
     var ambientLight = new THREE.AmbientLight(0x606060);
     scene.add(ambientLight);
@@ -65,40 +73,30 @@ function init() {
     renderer.setSize(window.innerWidth, window.innerHeight);
 
     // start
-    var startPoint = new THREE.Mesh(
-        cubeGeo,
-        new THREE.MeshLambertMaterial({
-            color: 0x0ff74c
-        })
-    );
-    startPoint.position.copy({
+    var startPoint = makeInstance(cubeGeo, 0x0ff74c,  0, 'Start');
+    startPoint.cube.position.copy({
         x: -475,
         y: 25,
         z: -475
     });
-    scene.add(startPoint);
-    objects.push(startPoint);
+    cubes.push(startPoint);
+    scene.add(startPoint.cube);
+    objects.push(startPoint.cube);
 
     // end
-    var endPoint = new THREE.Mesh(
-        cubeGeo,
-        new THREE.MeshLambertMaterial({
-            color: 0x00f7fc
-        })
-    );
-    endPoint.position.copy({
+    var endPoint =makeInstance(cubeGeo, 0x00f7fc,  0, 'End'); 
+    endPoint.cube.position.copy({
         x: 475,
         y: 25,
         z: 475
     });
-    scene.add(endPoint);
-    objects.push(endPoint);
+    cubes.push(endPoint);
+    scene.add(endPoint.cube);
+    objects.push(endPoint.cube);
 
-    // pathFInding
-
-
+    // 開始 pathFInding
     $("#findBtn").click(function () {
-        var grid = new PF.Grid(buildMatrix());
+        var grid = new PF.Grid(theMatrix);
 
         var finder = new PF.AStarFinder();
 
@@ -119,17 +117,42 @@ function init() {
             });
             scene.add(point);
         });
-        render();
     });
 
     container.appendChild(renderer.domElement);
     document.addEventListener("mousemove", onDocumentMouseMove, false);
     document.addEventListener("mousedown", onDocumentMouseDown, false);
     document.addEventListener("keydown", onDocumentKeyDown, false);
-    document.addEventListener("keyup", onDocumentKeyUp, false);
-    //
+    document.addEventListener("keyup", onDocumentKeyUp, false);    
+
+    // OrbitControls
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.target.set(0, 0, 0);
+    controls.update();
+
+    // auto resize
     window.addEventListener("resize", onWindowResize, false);
+   
+    // render
+    requestAnimationFrame(render);
 }
+
+function makeInstance(geometry, color, x, name) {
+    const labelContainerElem = document.querySelector('#labels');
+
+    const material = new THREE.MeshPhongMaterial({color});
+
+    const cube = new THREE.Mesh(geometry, material);
+    scene.add(cube);
+
+    cube.position.x = x;
+
+    const elem = document.createElement('div');
+    elem.textContent = name;
+    labelContainerElem.appendChild(elem);
+
+    return {cube, elem};
+  }
 
 function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -154,7 +177,6 @@ function onDocumentMouseMove(event) {
             .multiplyScalar(50)
             .addScalar(25);
     }
-    render();
 }
 
 function onDocumentMouseDown(event) {
@@ -184,13 +206,15 @@ function onDocumentMouseDown(event) {
                 .multiplyScalar(50)
                 .addScalar(25);
 
-            console.log(voxel.position);
+            var blockPoint = xzToPoint(voxel.position.x,voxel.position.z);
+            console.log("擺放點:"); console.log(blockPoint);
+            theMatrix[blockPoint.row][blockPoint.col] = 1;
+
             if (voxel.position.y == 25) {
                 scene.add(voxel);
                 objects.push(voxel);
             }
         }
-        render();
     }
 }
 
@@ -211,7 +235,29 @@ function onDocumentKeyUp(event) {
 }
 
 function render() {
+
+    // 更新 startPoint以及endPoint
+    cubes.forEach((cubeInfo, ndx) => {
+        const {cube, elem} = cubeInfo;
+        const tempV = new THREE.Vector3();
+        // get the position of the center of the cube
+        cube.updateWorldMatrix(true, false);
+        cube.getWorldPosition(tempV);
+        // get the normalized screen coordinate of that position
+        // x and y will be in the -1 to +1 range with x = -1 being
+        // on the left and y = -1 being on the bottom
+        tempV.project(camera);
+  
+        // convert the normalized position to CSS coordinates
+        const x = (tempV.x *  .5 + .5) * window.innerWidth;
+        const y = (tempV.y * -.5 + .5) * window.innerHeight;
+        // move the elem to that position
+        elem.style.transform = `translate(-50%, -50%) translate(${x}px,${y}px)`;
+      });
+
     renderer.render(scene, camera);
+
+    requestAnimationFrame(render);
 }
 
 function buildMatrix() {
