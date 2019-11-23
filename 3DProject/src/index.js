@@ -11,10 +11,15 @@ var objects = [];
 var path = [];
 var cubes = [];
 
-var controls; // dat.gui
+var pointlight_startPos;
+var pointlight_endPos;
 
-const boxSize =  50;
-var groundSize = localStorage.getItem("groundSize") ? parseInt(localStorage.getItem("groundSize"))  : 1000;
+var controls; // dat.gui
+var stats;
+
+
+const boxSize = 50;
+var groundSize = localStorage.getItem("groundSize") ? parseInt(localStorage.getItem("groundSize")) : 1000;
 
 var bound = groundSize / 2 - boxSize / 2;
 
@@ -46,10 +51,24 @@ function init() {
         1,
         20000
     );
-    camera.position.set(0, groundSize * 1.5, 0);
+    camera.position.set(0, groundSize * 1.4, 0);
     camera.lookAt(0, 0, 0);
+
+    // renderer
+    renderer = new THREE.WebGLRenderer({
+        antialias: true
+    });
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
+
+    renderer.setClearColor(new THREE.Color(0x00000, 1.0));
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x000);
+
+
 
     // roll-over helpers
     var rollOverGeo = new THREE.BoxBufferGeometry(boxSize, boxSize, boxSize);
@@ -94,9 +113,11 @@ function init() {
             transparent: true,
             opacity: 0.3,
             map: texture,
+            color: 0xc0c0c0,
             side: THREE.DoubleSide
         }),
     );
+    plane.receiveShadow = true;
     scene.add(plane);
     objects.push(plane);
 
@@ -109,36 +130,36 @@ function init() {
     // skybox
     addSkyBox();
 
-    // lights
-    var ambientLight = new THREE.AmbientLight(0x606060);
-    scene.add(ambientLight);
-
-    var directionalLight = new THREE.DirectionalLight(0xffffff);
-    directionalLight.position.set(1, 0.75, 0.5).normalize();
-    scene.add(directionalLight);
-    renderer = new THREE.WebGLRenderer({
-        antialias: true
-    });
-
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(window.innerWidth, window.innerHeight);
-
-    // start
+    // 物件座標
     startPos = makeInstance(cubeGeo, 0x0ff74c, 0, '物件');
     startPos.cube.position.copy(startCubPos_default);
+    startPos.cube.castShadow = true;
     cubes.push(startPos);
     objects.push(startPos.cube);
     scene.add(startPos.cube);
 
-    // end
+    // 目標座標
     endPos = makeInstance(cubeGeo, 0x00f7fc, 0, '目標');
     endPos.cube.position.copy(endCubePos_default);
     cubes.push(endPos);
     objects.push(endPos.cube);
     scene.add(endPos.cube);
 
+    // lights
+    // pointlight_startPos = new THREE.PointLight(0x0ff74c, 5, 100);
+    // scene.add(pointlight_startPos);
+    // pointlight_endPos = new THREE.PointLight(0x00f7fc, 5, 100);  
+    // scene.add(pointlight_endPos);
+    // var spotLightHelper = new THREE.PointLightHelper(pointlight_startPos);
+    // scene.add(spotLightHelper);
 
-    container.appendChild(renderer.domElement);
+    var ambientLight = new THREE.AmbientLight(0x606060);
+    scene.add(ambientLight);
+
+    var directionalLight = new THREE.DirectionalLight(0xffffff);
+    directionalLight.position.set(1, 0.75, 0.5).normalize();
+    scene.add(directionalLight);
+
     document.addEventListener("mousemove", onDocumentMouseMove, false);
     document.addEventListener("mousedown", onDocumentMouseDown, false);
     document.addEventListener("mouseup", function () {
@@ -146,6 +167,11 @@ function init() {
     }, false);
     document.addEventListener("keydown", onDocumentKeyDown, false);
     document.addEventListener("keyup", onDocumentKeyUp, false);
+    document.addEventListener('contextmenu', event => event.preventDefault());
+
+
+    // stats 
+    stats = initStats();
 
     // OrbitControls
     orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -160,9 +186,10 @@ function init() {
     };
 
     var gui = new dat.GUI();
-    gui.add(controls, 'openOrbitControls');
-    gui.add(controls, 'randBlockCount', 1, 500);
-    var groundResize = gui.add(controls, 'groundSize', 500, 2000, 50);
+    var groundResize = gui.add(controls, 'groundSize', 500, 3000, 100).name('地圖大小');
+    gui.add(controls, 'randBlockCount', 1, 1500, 10).name('阻礙物數量');
+    gui.add(controls, 'openOrbitControls').name('移動攝影機');
+
 
     groundResize.onFinishChange(function (value) {
         localStorage.setItem("groundSize", controls.groundSize);
@@ -171,8 +198,16 @@ function init() {
     // auto resize
     window.addEventListener("resize", onWindowResize, false);
 
+
+    container.appendChild(renderer.domElement);
     // render
     requestAnimationFrame(render);
+
+    setTimeout(
+        () => {
+            $('#overlay').fadeOut();
+        }, 1000
+    )
 
 
 }
@@ -222,6 +257,70 @@ function addSkyBox() {
     let skybox = new THREE.Mesh(skyboxGeo, materialArray);
     scene.add(skybox);
 }
+
+function initStats() {
+    var stats = new Stats();
+    stats.setMode(0); // 0: fps, 1: ms
+    stats.domElement.style.position = 'absolute';
+    stats.domElement.style.left = '0px';
+    stats.domElement.style.top = '';
+    stats.domElement.style.bottom = '0px';
+    document.getElementById("Stats-output").appendChild(stats.domElement);
+    return stats;
+}
+
+
+
+
+function render() {
+
+    orbitControls.enabled = controls.openOrbitControls;
+
+    stats.update();
+
+    // pointlight_startPos.position.copy(startPos.cube.position);
+    // pointlight_startPos.position.y = pointlight_startPos.position.y + 100;
+    // pointlight_endPos.position.copy( endPos.cube.position);
+    // pointlight_endPos.position.y = pointlight_endPos.position.y + 100;
+    
+    // 更新 startPoint以及endPoint
+    cubes.forEach((cubeInfo, ndx) => {
+        const {
+            cube,
+            elem
+        } = cubeInfo;
+        const tempV = new THREE.Vector3();
+        // get the position of the center of the cube
+        cube.updateWorldMatrix(true, false);
+        cube.getWorldPosition(tempV);
+        // get the normalized screen coordinate of that position
+        // x and y will be in the -1 to +1 range with x = -1 being
+        // on the left and y = -1 being on the bottom
+        tempV.project(camera);
+
+        // convert the normalized position to CSS coordinates
+        const x = (tempV.x * .5 + .5) * window.innerWidth;
+        const y = (tempV.y * -.5 + .5) * window.innerHeight;
+        // move the elem to that position
+        elem.style.transform = `translate(-50%, -50%) translate(${x}px,${y}px)`;
+    });
+
+    renderer.render(scene, camera);
+
+
+    requestAnimationFrame(render);
+
+
+    if (isGameStart &&
+        startPos.cube.position.x == endPos.cube.position.x &&
+        startPos.cube.position.z == endPos.cube.position.z) {
+        gameState(3);
+    }
+}
+
+
+
+
 
 
 
@@ -276,7 +375,7 @@ function onDocumentMouseDown(event) {
     if (intersects.length > 0) {
         var intersect = intersects[0];
 
-        if (isShiftDown) {
+        if (isShiftDown || event.which == 3) {
             // 消除障礙物
             if (intersect.object !== plane) {
                 scene.remove(intersect.object);
@@ -298,8 +397,8 @@ function onDocumentMouseDown(event) {
                 .addScalar(boxSize / 2);
 
             var blockPoint = xzToPoint(voxel.position.x, voxel.position.z);
-            console.log("擺放點:");
-            console.log(voxel.position);
+            // console.log("擺放點:");
+            // console.log(voxel.position);
             theMatrix[blockPoint.row][blockPoint.col] = 1;
 
             if (voxel.position.y == 25) {
@@ -311,6 +410,7 @@ function onDocumentMouseDown(event) {
 }
 
 function onDocumentKeyDown(event) {
+
     switch (event.keyCode) {
         case 16:
             isShiftDown = true;
@@ -326,44 +426,6 @@ function onDocumentKeyUp(event) {
     }
 }
 
-function render() {
-
-    orbitControls.enabled = controls.openOrbitControls;
-
-    // 更新 startPoint以及endPoint
-    cubes.forEach((cubeInfo, ndx) => {
-        const {
-            cube,
-            elem
-        } = cubeInfo;
-        const tempV = new THREE.Vector3();
-        // get the position of the center of the cube
-        cube.updateWorldMatrix(true, false);
-        cube.getWorldPosition(tempV);
-        // get the normalized screen coordinate of that position
-        // x and y will be in the -1 to +1 range with x = -1 being
-        // on the left and y = -1 being on the bottom
-        tempV.project(camera);
-
-        // convert the normalized position to CSS coordinates
-        const x = (tempV.x * .5 + .5) * window.innerWidth;
-        const y = (tempV.y * -.5 + .5) * window.innerHeight;
-        // move the elem to that position
-        elem.style.transform = `translate(-50%, -50%) translate(${x}px,${y}px)`;
-    });
-
-    renderer.render(scene, camera);
-
-
-    requestAnimationFrame(render);
-
-
-    if (isGameStart &&
-        startPos.cube.position.x == endPos.cube.position.x &&
-        startPos.cube.position.z == endPos.cube.position.z) {
-        gameState(3);
-    }
-}
 // 開始遊戲
 $("#startGame").click(function (e) {
     if (isGameStart) {
@@ -410,7 +472,6 @@ $("#random").click(function (e) {
 
     function goBlockRandom() {
         let randBlockCount = controls.randBlockCount;
-
         for (var i = 0; i < randBlockCount; i++) {
             // 增加障礙物
             let voxel = new THREE.Mesh(cubeGeo, cubeMaterial);
@@ -433,11 +494,13 @@ $("#random").click(function (e) {
             scene.add(voxel);
             objects.push(voxel);
         }
+
     }
 
     gameState(2);
     goStartEndRandom();
     goBlockRandom();
+
 });
 
 
@@ -509,7 +572,8 @@ function gameState(state) {
         path = finder.findPath(startPoint.col, startPoint.row, endPoint.col, endPoint.row, grid);
 
         if (path.length === 0) {
-            alert('找不到路徑!');
+            gameText.text("找不到路徑！");
+            gameText.show();
             return;
         }
 

@@ -27,14 +27,14 @@ body {
   left: 0;
 }
 
-.gameText{
+.gameText {
   position: absolute;
   left: 50%;
   top: 50%;
-  transform: translate(-50%,-50%);
+  transform: translate(-50%, -50%);
   text-shadow: -1px 0 black, 0 1px black,
-      1px 0 black, 0 -1px black;
-  
+    1px 0 black, 0 -1px black;
+
 }
 
 #labels {
@@ -71,4 +71,37 @@ body {
 
 #labels>div:hover {
   color: rgb(246, 255, 119);
+}
+
+#overlay {
+  background: rgb(0,0,0);
+  color: #fff;
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 5000;
+  padding-top: 15%;
+  float: left;
+  text-align: center;
+  
+}
+
+.spinner {
+  margin: 0 auto;
+  height: 240px;
+  width: 240px;
+  animation: rotate 1s infinite linear;
+  border: 15px solid firebrick;
+  border-right-color: transparent;
+  border-radius: 50%;
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
