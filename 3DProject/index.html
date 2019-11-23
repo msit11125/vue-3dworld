@@ -1,14 +1,26 @@
 <!doctype html>
 <html>
   <head>
-    <title>Getting Started</title>
+    <title>PathFinding Game</title>
     
     <link rel=stylesheet type="text/css" href="./node_modules/bootstrap/dist/css/bootstrap.min.css">
     <link rel=stylesheet type="text/css" href="./src/main.css">
   </head>
   <body>
     <div id="container">
-        <button id="findBtn" class="btn btn-primary btn-lg">開始</button>
+      <h3 class="gameText display-2 text-white">
+        Ready
+      </h3>
+      <div class="plays">
+          <button id="startGame" class="btn btn-dark">開始遊戲</button>
+          <button id="random" class="btn btn-info">隨機</button>
+
+          <button id="resetGame" class="btn btn-light mt-5">重設</button>
+
+          
+          
+      </div>
+       
         <div id="labels"></div>
     </div>
 
@@ -19,9 +31,10 @@
     <script type="text/javascript" src="./node_modules/dat.gui/build/dat.gui.js"></script>
     <script type="text/javascript" src="./node_modules/jquery/dist/jquery.min.js"></script>
 
-    <script type="text/javascript" src="./src/pathfinding-browser.min.js"></script>
-
     <script type="text/javascript" src="./node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+
+    
+    <script type="text/javascript" src="./src/pathfinding-browser.min.js"></script>
 
     <script src="./src/index.js"></script>
   </body>
