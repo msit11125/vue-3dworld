@@ -146,12 +146,14 @@ function init() {
     scene.add(endPos.cube);
 
     // lights
-    // pointlight_startPos = new THREE.PointLight(0x0ff74c, 5, 100);
-    // scene.add(pointlight_startPos);
-    // pointlight_endPos = new THREE.PointLight(0x00f7fc, 5, 100);  
-    // scene.add(pointlight_endPos);
-    // var spotLightHelper = new THREE.PointLightHelper(pointlight_startPos);
-    // scene.add(spotLightHelper);
+    pointlight_startPos = new THREE.PointLight(0x0ff74c, 10, 100);
+    pointlight_startPos.position.y = pointlight_startPos.position.y;
+
+    pointlight_endPos = new THREE.PointLight(0x00f7fc, 10, 100);     
+    pointlight_endPos.position.y = pointlight_endPos.position.y;
+
+    scene.add(pointlight_startPos);
+    scene.add(pointlight_endPos);
 
     var ambientLight = new THREE.AmbientLight(0x606060);
     scene.add(ambientLight);
@@ -278,11 +280,10 @@ function render() {
 
     stats.update();
 
-    // pointlight_startPos.position.copy(startPos.cube.position);
-    // pointlight_startPos.position.y = pointlight_startPos.position.y + 100;
-    // pointlight_endPos.position.copy( endPos.cube.position);
-    // pointlight_endPos.position.y = pointlight_endPos.position.y + 100;
-    
+    TWEEN.update();
+    pointlight_startPos.position.copy(startPos.cube.position);
+    pointlight_endPos.position.copy( endPos.cube.position);
+
     // 更新 startPoint以及endPoint
     cubes.forEach((cubeInfo, ndx) => {
         const {
@@ -351,7 +352,7 @@ function onDocumentMouseMove(event) {
             .divideScalar(boxSize)
             .floor()
             .multiplyScalar(boxSize)
-            .addScalar(boxSize / 2);
+            .addScalar(25);
     }
 
     if (isMousePress) {
@@ -394,14 +395,14 @@ function onDocumentMouseDown(event) {
                 .divideScalar(boxSize)
                 .floor()
                 .multiplyScalar(boxSize)
-                .addScalar(boxSize / 2);
+                .addScalar(25);
 
             var blockPoint = xzToPoint(voxel.position.x, voxel.position.z);
-            // console.log("擺放點:");
-            // console.log(voxel.position);
+
+            console.log("擺放點:", voxel.position, blockPoint);
             theMatrix[blockPoint.row][blockPoint.col] = 1;
 
-            if (voxel.position.y == 25) {
+            if (voxel.position.y == boxSize / 2) {
                 scene.add(voxel);
                 objects.push(voxel);
             }
@@ -426,7 +427,7 @@ function onDocumentKeyUp(event) {
     }
 }
 
-// 開始遊戲
+// 目標導航
 $("#startGame").click(function (e) {
     if (isGameStart) {
         gameState(0);
@@ -463,7 +464,7 @@ $("#random").click(function (e) {
         endCubePos_default.x = endPos.cube.position.x;
         endCubePos_default.z = endPos.cube.position.z;
 
-        // 避免重複
+        // 避免重疊
         if (startCubPos_default.x == endCubePos_default.x &&
             startCubPos_default.z == endCubePos_default.z) {
             goStartEndRandom();
@@ -472,11 +473,13 @@ $("#random").click(function (e) {
 
     function goBlockRandom() {
         let randBlockCount = controls.randBlockCount;
+        
         for (var i = 0; i < randBlockCount; i++) {
             // 增加障礙物
             let voxel = new THREE.Mesh(cubeGeo, cubeMaterial);
             let voxelX = standardization(getRandom(-bound - boxSize, bound * 2));
             let voxelZ = standardization(getRandom(-bound - boxSize, bound * 2));
+            // 避免重疊
             while ((voxelX == startCubPos_default.x &&
                     voxelZ == startCubPos_default.z) ||
                 (voxelX == endCubePos_default.x &&
@@ -489,6 +492,7 @@ $("#random").click(function (e) {
                 y: 25,
                 z: voxelZ
             });
+
             let blockPoint = xzToPoint(voxel.position.x, voxel.position.z);
             theMatrix[blockPoint.row][blockPoint.col] = 1;
             scene.add(voxel);
@@ -552,7 +556,7 @@ function gameState(state) {
         gameText.text("Pause");
         gameText.show();
         clearNextMovingStep();
-        button.text("開始遊戲");
+        button.text("目標導航");
 
         isGameStart = false;
     }
@@ -576,20 +580,25 @@ function gameState(state) {
             gameText.show();
             return;
         }
-
+        let coords = startPos.cube.position;
         path.forEach((element, idx) => {
             // 移動
             isSetTimouts.push(
                 setTimeout(function () {
-                    startPos.cube.position.copy({
-                        x: element[0] * boxSize - bound,
-                        y: 25,
-                        z: element[1] * boxSize - bound
-                    });
+                    let tween = new TWEEN.Tween(coords)
+                        .to({
+                            x: element[0] * boxSize - bound,
+                            z: element[1] * boxSize - bound
+                        }, 200)
+                        .easing(TWEEN.Easing.Quadratic.Out)
+                        .onUpdate(() => {
+                            startPos.cube.position.x = coords.x;
+                            startPos.cube.position.y = coords.y;
+                            startPos.cube.position.z = coords.z;
+                        }).start();
                 }, 200 * idx)
             )
         });
-
 
         gameText.hide();
         button.text("暫停");
@@ -600,7 +609,7 @@ function gameState(state) {
 
     // restart
     if (state == 2) {
-        button.text("開始遊戲");
+        button.text("目標導航");
         gameText.hide();
         clearNextMovingStep();
 
@@ -636,7 +645,7 @@ function gameState(state) {
         gameText.text("Game Over");
         gameText.show();
 
-        button.text("開始遊戲");
+        button.text("目標導航");
 
         isGameStart = false;
         isGameOver = true;
