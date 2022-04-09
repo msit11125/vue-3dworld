@@ -17,7 +17,7 @@
     "core-js": "^2.6.9",
     "dat.gui": "^0.7.6",
     "jquery": "^3.4.1",
-    "moment": "^2.24.0",
+    "moment": "^2.29.2",
     "pathfinding": "^0.4.18",
     "popper.js": "^1.15.0",
     "portal-vue": "^2.1.6",
